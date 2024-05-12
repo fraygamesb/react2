@@ -1,35 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useMemo } from "react";
+import List from "./components/List";
+import Controls from "./components/Controls";
+import CreateCard from "./components/CreateCard";
+
+export interface Filter {
+  more: boolean;
+}
+
+export interface Competence {
+  id: number;
+  name: string;
+  description: string;
+  skill: number;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [competenceList, setCompetenceList] = useState([
+    { id: 0, name: "HTML", description: "Макс Кабиров", skill: 100 },
+    { id: 1, name: "HTML", description: "Макс Кабиров", skill: 100 },
+    { id: 2, name: "HTML", description: "Макс Кабиров", skill: 45 },
+    { id: 3, name: "HTML", description: "Макс Кабиров", skill: 45 },
+  ]);
+  const [hide, setHide] = useState(true);
+  const [filter, setFilter] = useState<Filter | null>({ more: true });
+
+  const deleteCard = (id: number) => {
+    setCompetenceList(competenceList.filter((c) => c.id !== id));
+  };
+
+  const filtredCompetenceList = useMemo(
+    () =>
+      competenceList.filter((c) => {
+        if (!filter) return true;
+        if (filter.more) return c.skill > 50;
+        return c.skill < 50;
+      }),
+    [competenceList, filter]
+  );
+
+  const onFilter = (filter: Filter | null) => {
+    setFilter(filter);
+  };
+
+  const toggle = () => {
+    setHide(!hide);
+  };
+
+  const create = (comptence: Competence) => {
+    setCompetenceList([...competenceList, comptence]);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Controls hide={hide} toggle={toggle} onFilter={onFilter} />
+      {!hide && <List items={filtredCompetenceList} deleteCard={deleteCard} />}
+      <CreateCard create={create} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
